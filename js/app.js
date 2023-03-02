@@ -4,6 +4,8 @@
 
   let DB //PASO 9 donde se va a almacenar el valor de la base de datos 
 
+  const listadoClientes =  document.querySelector('#listado-clientes') //moviendo esta variable del if del scripting hacia el global 
+
   document.addEventListener('DOMContentLoaded', ()=>{ //PASO 2
 
     crearDB() //PASO 3 llamando la funcion de crear la base de datos una vez este listo el documento 
@@ -13,7 +15,47 @@
       obtenerClientes() //PASO 57 
     }
 
+    listadoClientes.addEventListener('click', eliminarClientes) //PASO 105
+
   })
+
+  function eliminarClientes (e){
+
+    // console.log(e.target.classList)
+
+    if(e.target.classList.contains('eliminar')){ //PASO 106 si lo que presionamos tiene la clase de eliminar significa que se le dio click a ese boton 
+
+      // console.log('diste click en eliminar ')
+
+      const idEliminar = e.target.dataset.cliente   //PASO 107 para seleccionar el atributo personalizado agg al html con innerhtm que se llama data-cliente  se llama ese atributo con dataset y .nombre que se le dio en este caso fue cliente 
+
+      // console.log(idEliminar)
+
+      const confirmar = confirm('deseas eliminar este cliente? ') //PASO 108 el confirm es para mostrar un msj de alerta pero de confirmacion el cual si se le da a cancelar retorna un false y se le da a acpetar retorna un true 
+
+      if(confirmar){ //PASO 109 si confirmar esta como true es decir se le dio a aceptar a la alerta ejecuta lo siguiente 
+
+        const transaction = DB.transaction(['crm'], 'readwrite')
+
+        const objectStore = transaction.objectStore('crm')
+
+        objectStore.delete(idEliminar)
+
+        transaction.oncomplete = function(){
+
+          console.log('eliminado..')
+
+          e.target.parentElement.parentElement.remove()
+        }
+
+        transaction.onerror = function(){
+
+          console.log('hubo un error ')
+        }
+
+      }
+    }
+  }
 
 
   function obtenerClientes(){ //PASO 58
@@ -41,7 +83,6 @@
 
           const {nombre, email, telefono, empresa, id} = cursor.value //extraer los datos de cursor.value
 
-          const listadoClientes =  document.querySelector('#listado-clientes')
 
           listadoClientes.innerHTML += ` <tr>
           <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
@@ -56,7 +97,7 @@
           </td>
           <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200 text-sm leading-5">
               <a href="editar-cliente.html?id=${id}" class="text-teal-600 hover:text-teal-900 mr-5">Editar</a>
-              <a href="#" data-cliente="${id}" class="text-red-600 hover:text-red-900">Eliminar</a>
+              <a href="#" data-cliente="${id}" class="text-red-600 hover:text-red-900 eliminar">Eliminar</a>
           </td>
           </tr>
           `;  //para colocar todo el html de los registros de l base de datos  en el ultimo td en el enlace de editar se le pasa la referencia el href que al dar editar nos debe de llevar a la pagina de editar y el ? es una forma de pasar parametroa a la url y se le esta pasando un id que sera igual a la variable de id 
